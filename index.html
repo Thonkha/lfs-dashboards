@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Lesotho Funeral Claims Dashboard</title>
+
+  <!-- Plotly -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <!-- SheetJS for .xlsx -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <!-- PapaParse for robust CSV parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="sidebar">
+    <h2>Lesotho Funeral</h2>
+    <div class="nav-item active" style="color:white;">Claims</div>
+    <div class="nav-item"><a href="policy_onboarding.html">Policy Uptake and Onboarding</a></div>
+    <div class="nav-item"><a href="society_claims.html">Society Claims</a></div>
+    <div class="nav-item"><a href="settings.html">Settings</a></div>
+
+    <hr/>
+
+    <label class="file-label">Upload .xlsx or .csv</label>
+    <input id="fileInput" type="file" accept=".xlsx,.xls,.csv" />
+    <div style="margin-top:12px; font-size:13px; color:#666">CSV expected headers: Claim Number, Claim Date (mm/dd/yyyy), Cover Amount, Paid Amount, Claim Status, Claim Phase Status, Cause of Death</div>
+  </div>
+
+  <main class="main">
+    <header class="header">
+      <div>
+        <h1>Claims Dashboard</h1>
+        <p class="subtitle">Interactive reporting — upload your file to populate</p>
+      </div>
+    </header>
+
+    <section class="metrics" id="metrics">
+      <div class="card" id="metricTotalClaims"><h3>Total Claims</h3><p class="metric-value">--</p></div>
+      <div class="card" id="metricTotalPaid"><h3>Total Paid</h3><p class="metric-value">--</p></div>
+      <div class="card" id="metricTotalCover"><h3>Total Cover</h3><p class="metric-value">--</p></div>
+      <div class="card" id="metricPaidPct"><h3>Paid / Cover</h3><p class="metric-value">--</p></div>
+    </section>
+
+    <section class="charts-section" id="charts-section">
+      <div class="chart-box" id="mainLineChart"></div>
+      <div class="right-column">
+        <div class="chart-box" id="claimStatusPie"></div>
+        <div class="chart-box" id="claimPhaseBar"></div>
+        <div class="chart-box" id="topCauses"></div>
+        <div class="chart-box" id="coverVsPaid"></div>
+      </div>
+
+      <!-- Below row for weekly and monthly trend full-width -->
+      <div class="chart-box full" id="monthlyTrend"></div>
+      <div class="chart-box full" id="weeklyTrend"></div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

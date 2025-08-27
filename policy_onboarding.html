@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Policy Uptake & Onboarding Dashboard</title>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <h2>Reports</h2>
+  <div class="nav-item"><a href="index.html">Claims</a></div>
+  <div class="nav-item active" style="color:white;">Policy Uptake & Onboarding</div>
+  <div class="nav-item"><a href="society_claims.html">Society Claims</a></div>
+  <div class="nav-item"><a href="settings.html">Settings</a></div>
+
+  <label class="file-label" for="fileInput">Upload Policy Excel:</label>
+  <input type="file" id="fileInput" accept=".xlsx, .xls">
+  <button id="resetFilter">Reset Filter</button>
+
+
+</div>
+
+<!-- Main content -->
+<div class="main">
+  <div class="header">
+    <h1>Policy Uptake & Onboarding</h1>
+    <p class="subtitle">Interactive dashboard from uploaded Excel data</p>
+  </div>
+
+  <div id="errorMessage" style="color: red; font-weight: bold; margin-bottom: 10px;"></div>
+
+  <!-- KPIs -->
+  <div class="metrics">
+    <div class="card">
+      <h3>Total Policies</h3>
+      <div class="metric-value" id="totalPolicies">0</div>
+    </div>
+    <div class="card">
+      <h3>On Trial</h3>
+      <div class="metric-value" id="trialCount">0</div>
+    </div>
+    <div class="card">
+      <h3>Upgrades</h3>
+      <div class="metric-value" id="Upgrades">0</div>
+    </div>
+    <div class="card">
+      <h3>Downgrades</h3>
+      <div class="metric-value" id="Downgrades">0</div>
+    </div>
+    <div class="card">
+      <h3>Active Policies</h3>
+      <div class="metric-value" id="activeCount">0</div>
+    </div>
+   
+    <div class="card">
+      <h3>Conversion Rate</h3>
+      <div class="metric-value" id="conversionRate">0%</div>
+    </div> 
+    
+  </div>
+
+  <!-- Charts -->
+  <div class="charts">
+    <div class="chart-box"><div id="weeklyTrend"></div></div>
+    <div class="chart-box"><div id="monthlyTrend"></div></div>
+    <div class="chart-box"><div id="planTypeDist"></div></div>
+    <div class="chart-box"><div id="statusSplit"></div></div>
+    <div class="chart-box"><div id="regionUptake"></div></div>
+    <div class="chart-box"><div id="branchLeaderboard"></div></div>
+    <div class="chart-box"><div id="capturedByRank"></div></div>
+  </div>
+</div>
+
+<script src="policy_onboarding.js"></script>
+</body>
+</html>

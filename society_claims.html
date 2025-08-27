@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Society Claims Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Menu</h2>
+        <div class="nav-item"><a href="index.html">Claims</a></div>
+        <div class="nav-item"><a href="policy_onboarding.html">Policy Uptake & Onboarding</a></div>
+        <div class="nav-item active" style="color:white;">Society Claims</div>
+        <div class="nav-item"><a href="settings.html">Settings</a></div>
+
+        <label for="fileInput" class="file-label">Upload Society Claims CSV</label>
+        <input type="file" id="fileInput" accept=".csv">
+        <label for="dateStart" class="file-label">Start Date</label>
+        <input type="date" id="dateStart">
+        <label for="dateEnd" class="file-label">End Date</label>
+        <input type="date" id="dateEnd">
+    </div>
+
+    <div class="main">
+        <div class="header">
+            <h1>Society Claims Dashboard</h1>
+            <p class="subtitle">Interactive breakdown of claims by branch, society, and cover type</p>
+        </div>
+
+        <div class="metrics" id="metrics"></div>
+
+        <div class="charts">
+            <div class="chart-box" id="claimsByBranch"></div>
+            <div class="chart-box" id="claimsBySociety"></div>
+            <div class="chart-box" id="claimsByCoverType"></div>
+            <div class="chart-box" id="claimsByGender"></div>
+            <div class="chart-box" id="claimsByCoffin"></div>
+            <div class="chart-box" id="avgCoverBySociety"></div>
+            <div class="chart-box" id="ageDistribution"></div>
+            <!--<div class="chart-box" id="claimsByMonth"></div>-->
+        </div>
+    </div>
+
+    <script src="society_claims.js"></script>
+</body>
+</html>
