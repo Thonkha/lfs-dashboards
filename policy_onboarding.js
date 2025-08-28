@@ -114,7 +114,7 @@ function updateDashboard(data, saveMain = true) {
 
     // === KPIs ===
     const totalPolicies = data.length;
-    const NewPolicies = data.filter(d => d.ACTION.toUpperCase()).length;
+    const NewPolicies = data.filter(d => d.ACTION.toUpperCase() === "NEW").length;
     const trialCount = data.filter(d => d.STATUS.toUpperCase() === "ON TRIAL").length;
     const upgrades = data.filter(d => d.ACTION.toUpperCase() === "UPGRADE").length;
     const downgrades = data.filter(d => d.ACTION.toUpperCase() === "DOWNGRADE").length;
