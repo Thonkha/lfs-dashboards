@@ -114,29 +114,51 @@ function updateDashboard(data, saveMain = true) {
 
     // === KPIs ===
     const totalPolicies = data.length;
+    const NewPolicies = data.filter(d => d.ACTION.toUpperCase()).length;
     const trialCount = data.filter(d => d.STATUS.toUpperCase() === "ON TRIAL").length;
     const upgrades = data.filter(d => d.ACTION.toUpperCase() === "UPGRADE").length;
     const downgrades = data.filter(d => d.ACTION.toUpperCase() === "DOWNGRADE").length;
     const activeCount = data.filter(d => d.STATUS.toUpperCase() === "ACTIVE").length;
     const conversionRate = totalPolicies ? ((activeCount / totalPolicies) * 100).toFixed(1) : 0;
 
-    document.getElementById("totalPolicies").textContent = totalPolicies;
+    document.getElementById("totalNewPolicies").textContent = NewPolicies;
     document.getElementById("trialCount").textContent = trialCount;
     document.getElementById("Upgrades").textContent = upgrades;
     document.getElementById("Downgrades").textContent = downgrades;
     document.getElementById("activeCount").textContent = activeCount;
     document.getElementById("conversionRate").textContent = conversionRate + "%";
 
-    // === Weekly Trend ===
-    const weekMap = {};
-    data.forEach(d => weekMap[d.WEEK] = (weekMap[d.WEEK] || 0) + 1);
-    Plotly.react("weeklyTrend", [{
-        x: Object.keys(weekMap),
-        y: Object.values(weekMap),
-        type: "scatter",
-        mode: "lines+markers",
-        line: { color: "#800000" }
-    }], { title: "Weekly New Policies", margin: { t: 30 } });
+// === Weekly Trend by ACTION ===
+    const weekActionMap = {};
+
+    // Group data by week and action
+    data.forEach(d => {
+        const week = d.WEEK;
+        const action = d.ACTION;
+        if (!weekActionMap[action]) {
+            weekActionMap[action] = {};
+        }
+        weekActionMap[action][week] = (weekActionMap[action][week] || 0) + 1;
+    });
+
+    // Prepare traces for Plotly
+    const traces = Object.keys(weekActionMap).map(action => {
+        return {
+            x: Object.keys(weekActionMap[action]),
+            y: Object.values(weekActionMap[action]),
+            type: "scatter",
+            mode: "lines+markers",
+            name: action   // label line by ACTION value
+        };
+    });
+
+    // Plot the chart
+    Plotly.react("weeklyTrend", traces, {
+        title: "Weekly Trend by ACTION",
+        margin: { t: 30 },
+        xaxis: { title: "Week" },
+        yaxis: { title: "Count" }
+    });
 
     // Weekly interactivity
     document.getElementById("weeklyTrend").on('plotly_click', function(event){

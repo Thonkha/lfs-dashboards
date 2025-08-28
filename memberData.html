@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard - Demo</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>Reports</h2>
+    <div class="nav-item active">Member Data</div>
+    <div class="nav-item"><a href="claims.html">Claims</a></div>
+    <div class="nav-item"><a href="policies.html">Policies</a></div>
+    <div class="nav-item"><a href="settings.html">Settings</a></div>
+
+    <label class="file-label" for="fileInput">Upload Excel:</label>
+    <input type="file" id="fileInput" accept=".xlsx, .xls">
+    <button id="resetFilter">Reset Filter</button>
+  </div>
+
+  <!-- Main content -->
+  <div class="main">
+    <div class="header">
+      <h1>Dashboard Overview</h1>
+      <p class="subtitle">Interactive dashboard from uploaded Excel data</p>
+    </div>
+
+    <div id="errorMessage" style="color: red; font-weight: bold; margin-bottom: 10px;"></div>
+
+    <!-- KPIs -->
+    <div class="metrics">
+      <div class="card">
+        <h3>Total Records</h3>
+        <div class="metric-value" id="totalRecords">0</div>
+      </div>
+      <div class="card">
+        <h3>Active</h3>
+        <div class="metric-value" id="activeCount">0</div>
+      </div>
+      <div class="card">
+        <h3>Inactive</h3>
+        <div class="metric-value" id="inactiveCount">0</div>
+      </div>
+      <div class="card">
+        <h3>Conversion Rate</h3>
+        <div class="metric-value" id="conversionRate">0%</div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts">
+      <div class="chart-box"><div id="weeklyTrend"></div></div>
+      <div class="chart-box"><div id="monthlyTrend"></div></div>
+      <div class="chart-box"><div id="statusSplit"></div></div>
+      <div class="chart-box"><div id="regionDist"></div></div>
+    </div>
+  </div>
+
+  <script src="memberData.js"></script>
+</body>
+</html>
