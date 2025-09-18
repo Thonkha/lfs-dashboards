@@ -114,19 +114,27 @@ function updateDashboard(data, saveMain = true) {
 
     // === KPIs ===
     const totalPolicies = data.length;
-    const NewPolicies = data.filter(d => d.ACTION.toUpperCase() === "NEW").length;
-    const trialCount = data.filter(d => d.STATUS.toUpperCase() === "ON TRIAL").length;
+    const NewlyCapturedPolicies = data.filter(d => d.ACTION.toUpperCase() === "NEW").length;
+    const NewPolicies = data.filter(d => 
+    d .ACTION?.toUpperCase() === "NEW" && d.STATUS?.toUpperCase() === "ON TRIAL"
+    ).length;
+    const existedPolicies = data.filter(d => 
+    d .ACTION?.toUpperCase() === "NEW" && d.STATUS?.toUpperCase() === "ACTIVE"
+    ).length;
     const upgrades = data.filter(d => d.ACTION.toUpperCase() === "UPGRADE").length;
     const downgrades = data.filter(d => d.ACTION.toUpperCase() === "DOWNGRADE").length;
     const activeCount = data.filter(d => d.STATUS.toUpperCase() === "ACTIVE").length;
-    const conversionRate = totalPolicies ? ((activeCount / totalPolicies) * 100).toFixed(1) : 0;
-
-    document.getElementById("totalNewPolicies").textContent = NewPolicies;
-    document.getElementById("trialCount").textContent = trialCount;
+    const ontrial = data.filter(d => d.STATUS.toUpperCase() === "ON TRIAL").length;
+    const conversionRate = totalPolicies ? ((activeCount / ontrial) * 100).toFixed(1) : 0;
+    const cancelled = data.filter(d => d.STATUS.toUpperCase() === "CANCELLED").length;
+  
+    document.getElementById("totalNewPolicies").textContent = NewlyCapturedPolicies;
+    document.getElementById("newCount").textContent = NewPolicies;
     document.getElementById("Upgrades").textContent = upgrades;
     document.getElementById("Downgrades").textContent = downgrades;
-    document.getElementById("activeCount").textContent = activeCount;
+    document.getElementById("activeCount").textContent = existedPolicies;
     document.getElementById("conversionRate").textContent = conversionRate + "%";
+    document.getElementById("cancelledCount").textContent = cancelled;
 
 // === Weekly Trend by ACTION ===
     const weekActionMap = {};
