@@ -179,6 +179,7 @@ function normalizeAndIndex(raw) {
     obj._TOTAL = safeNum(obj[COL.TOTAL]);
     obj._PRENEED = safeNum(obj[COL.PRENEED]);
     obj._CASH = safeNum(obj[COL.CASH]);
+    obj._SOCIETY = safeNum(obj[COL.SOCIETY]);
     obj._PAYMENT_MODE = (obj[COL.MODE_PAY] || "").toString().trim().toUpperCase();
     obj._PAY_CAT = (obj[COL.PAY_CAT] || "").toString().trim().toUpperCase();
     obj._BRANCH = (obj[COL.BRANCH] || "").toString().trim();
@@ -191,6 +192,7 @@ function normalizeAndIndex(raw) {
   return data;
 }
 
+
 // -------------------- KPI CALCULATIONS --------------------
 function computeKPIs(data) {
   const k = {};
@@ -202,15 +204,25 @@ function computeKPIs(data) {
   k.coffinCounts = {};
   data.forEach(d => { const c = d._COFFIN || "Unknown"; k.coffinCounts[c] = (k.coffinCounts[c]||0)+1; });
   k.paymentMix = {};
-  data.forEach(d => { const p = d._PAYMENT_MODE || "UNKNOWN"; k.paymentMix[p] = (k.paymentMix[p]||0)+1; });
-  k.totalRevenue = data.reduce((s,d)=> s + (d._TOTAL||0), 0);
+  data.forEach(d => { const p = d._PAY_CAT || "UNKNOWN"; k.paymentMix[p] = (k.paymentMix[p]||0)+1; });
+  //k.totalRevenue = data.reduce((s,d)=> s + (d._TOTAL||0), 0);
+  k.revenue = data.reduce((s, d) => s + (safeNum(d[COL.TOTAL]) - (safeNum(d[COL.PRENEED]) + safeNum(d[COL.SOCIETY]))), 0);
   k.totalPreneed = data.reduce((s,d)=> s + (d._PRENEED||0), 0);
   k.totalCash = data.reduce((s,d)=> s + (d._CASH||0), 0);
-  k.avgRevenuePerCase = data.length ? k.totalRevenue / data.length : 0;
+  k.totalSocieties = data.reduce((s,d)=> s + (d._SOCIETY||0), 0);
+  k.claimsCost = data.reduce((s, d) => s + (safeNum(d[COL.PRENEED]) + safeNum(d[COL.SOCIETY])), 0);
+  k.avgRevenuePerCase = data.length ? k.revenue / data.length : 0;
   k.missingTotals = data.filter(d => (!d[COL.TOTAL] || safeNum(d[COL.TOTAL])===0)).length;
-  k.afCount = data.filter(d => (d._PAYMENT_MODE || "").includes("A/F") || (d._PAYMENT_MODE || "").includes("AF")).length;
   k.turnaroundWithin7 = data.filter(d => (d._STAY_DAYS != null && d._STAY_DAYS <= 7)).length;
   k.turnaroundWithin7Pct = data.length ? Math.round(1000 * k.turnaroundWithin7 / data.length) / 10 : 0;
+  k.turnaroundWithin30 = data.filter(d => (d._STAY_DAYS != null && d._STAY_DAYS <= 30)).length;
+  k.turnaroundWithin30Pct = data.length ? Math.round(1000 * k.turnaroundWithin30 / data.length) / 10 : 0;
+  // Add gender split
+  k.genderSplit = {};
+  data.forEach(d => {
+    const g = d._GENDER || "Unknown";
+    k.genderSplit[g] = (k.genderSplit[g] || 0) + 1;
+  });
   // peak hours
   k.hourCounts = {};
   data.forEach(d => { const h = d._TIME_OUT_H; if (h!=null) k.hourCounts[h] = (k.hourCounts[h]||0)+1; });
@@ -236,13 +248,15 @@ function renderKPIs(k) {
   container.innerHTML = `
     <div class="card"><h3>Total Dispatches</h3><div class="metric-value">${k.totalDispatches}</div></div>
     <div class="card"><h3>Average Stay (days)</h3><div class="metric-value">${k.avgStay}</div></div>
-    <div class="card"><h3>Total Revenue</h3><div class="metric-value">${formatMoney(k.totalRevenue)}</div></div>
+    <div class="card"><h3>Total Revenue</h3><div class="metric-value">${formatMoney(k.revenue)}</div></div>
     <div class="card"><h3>Avg Revenue / Case</h3><div class="metric-value">${formatMoney(k.avgRevenuePerCase)}</div></div>
-    <div class="card"><h3>Preneed Total</h3><div class="metric-value">${formatMoney(k.totalPreneed)}</div></div>
+    <div class="card"><h3>Policy Claims</h3><div class="metric-value">${formatMoney(k.totalPreneed)}</div></div>
+    <div class="card"><h3>Claims Cost</h3><div class="metric-value">${formatMoney(k.claimsCost)}</div></div>
+    <div class="card"><h3>Cash collection</h3><div class="metric-value">${formatMoney(k.totalCash)}</div></div>
+    <div class="card"><h3>Society Claims</h3><div class="metric-value">${formatMoney(k.totalSocieties)}</div></div>
     <div class="card"><h3>Missing Totals</h3><div class="metric-value">${k.missingTotals}</div></div>
-    <div class="card"><h3>AF / After-Funeral Cases</h3><div class="metric-value">${k.afCount}</div></div>
+    <div class="card"><h3>Turnaround ≤ 30 days</h3><div class="metric-value">${k.turnaroundWithin30Pct}%</div></div>
     <div class="card"><h3>Turnaround ≤ 7 days</h3><div class="metric-value">${k.turnaroundWithin7Pct}%</div></div>
-    
   `;
 }
 
@@ -290,6 +304,7 @@ function renderRevenueTrend(data) {
     if (!d._DATE_OUT) return;
     const key = d._DATE_OUT.toISOString().slice(0,7); // month
     map[key] = (map[key]||0) + (d._TOTAL||0);
+
   });
   const x = Object.keys(map).sort();
   const y = x.map(k => map[k]);
