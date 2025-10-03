@@ -1,18 +1,20 @@
 // --------------------------
 // Global Data
 // --------------------------
-let mainData = [];  // stores full dataset
+let mainData = [];   // full dataset
 let filteredData = []; // currently displayed data
+let activeMonth = null; // track selected month
+let activeWeek = null;  // track selected week
 
 // --------------------------
-// Load Google Sheet on page load
+// Load Google Sheet
 // --------------------------
 window.onload = loadGoogleSheetData;
 
 async function loadGoogleSheetData() {
-    const sheetId = "1NLBYEfipHHvdpyLPrVfhqybRgFLlWEqcUkYwqWe8bUI"; // replace with actual ID
-    const apiKey = "AIzaSyDjgYbFOH0uMwniKeiM6lZ5BJbOcupeM74";         // replace with Google Cloud API key
-    const range = "Sheet1";                // sheet tab name
+    const sheetId = "1NLBYEfipHHvdpyLPrVfhqybRgFLlWEqcUkYwqWe8bUI"; 
+    const apiKey = "AIzaSyDjgYbFOH0uMwniKeiM6lZ5BJbOcupeM74";         
+    const range = "Sheet1";                
     const errorDiv = document.getElementById("errorMessage");
 
     try {
@@ -51,7 +53,7 @@ async function loadGoogleSheetData() {
 }
 
 // --------------------------
-// Excel Backup Loader
+// Excel Upload
 // --------------------------
 function handleExcelUpload(event) {
     const file = event.target.files[0];
@@ -82,25 +84,45 @@ function handleExcelUpload(event) {
     };
     reader.readAsArrayBuffer(file);
 }
-
 document.getElementById("fileInput").addEventListener("change", handleExcelUpload);
 
 // --------------------------
 // Reset Filter Button
 // --------------------------
 document.getElementById('resetFilter')?.addEventListener('click', () => {
+    activeMonth = null;
+    activeWeek = null;
     updateDashboard(mainData, false);
 });
+
+// --------------------------
+// Apply Filters Together
+// --------------------------
+function applyFilters() {
+    let filtered = [...mainData];
+
+    if (activeMonth) {
+        filtered = filtered.filter(d => d.MONTH === parseInt(activeMonth));
+    }
+    if (activeWeek) {
+        filtered = filtered.filter(d => d.WEEK === parseInt(activeWeek));
+    }
+
+    return filtered;
+}
 
 // --------------------------
 // Dashboard Updater
 // --------------------------
 function updateDashboard(data, saveMain = true) {
     if (saveMain) mainData = data;
-    filteredData = data;
+    filteredData = applyFilters();
 
-    // Normalize and parse
-    data.forEach(d => {
+    // If no filters, use original data
+    if (filteredData.length === 0) filteredData = data;
+
+    // Normalize
+    filteredData.forEach(d => {
         d.MONTH = parseInt(d.MONTH) || 0;
         d.WEEK = parseInt(d.WEEK) || 0;
         d.DAY = parseInt(d.DAY) || 0;
@@ -113,20 +135,20 @@ function updateDashboard(data, saveMain = true) {
     });
 
     // === KPIs ===
-    const totalPolicies = data.length;
-    const NewlyCapturedPolicies = data.filter(d => d.ACTION.toUpperCase() === "NEW").length;
-    const NewPolicies = data.filter(d => 
-    d .ACTION?.toUpperCase() === "NEW" && d.STATUS?.toUpperCase() === "ON TRIAL"
+    const totalPolicies = filteredData.length;
+    const NewlyCapturedPolicies = filteredData.filter(d => d.ACTION.toUpperCase() === "NEW").length;
+    const NewPolicies = filteredData.filter(d => 
+        d.ACTION?.toUpperCase() === "NEW" && d.STATUS?.toUpperCase() === "ON TRIAL"
     ).length;
-    const existedPolicies = data.filter(d => 
-    d .ACTION?.toUpperCase() === "NEW" && d.STATUS?.toUpperCase() === "ACTIVE"
+    const existedPolicies = filteredData.filter(d => 
+        d.ACTION?.toUpperCase() === "NEW" && d.STATUS?.toUpperCase() === "ACTIVE"
     ).length;
-    const upgrades = data.filter(d => d.ACTION.toUpperCase() === "UPGRADE").length;
-    const downgrades = data.filter(d => d.ACTION.toUpperCase() === "DOWNGRADE").length;
-    const activeCount = data.filter(d => d.STATUS.toUpperCase() === "ACTIVE").length;
-    const ontrial = data.filter(d => d.STATUS.toUpperCase() === "ON TRIAL").length;
+    const upgrades = filteredData.filter(d => d.ACTION.toUpperCase() === "UPGRADE").length;
+    const downgrades = filteredData.filter(d => d.ACTION.toUpperCase() === "DOWNGRADE").length;
+    const activeCount = filteredData.filter(d => d.STATUS.toUpperCase() === "ACTIVE").length;
+    const ontrial = filteredData.filter(d => d.STATUS.toUpperCase() === "ON TRIAL").length;
     const conversionRate = totalPolicies ? ((activeCount / ontrial) * 100).toFixed(1) : 0;
-    const cancelled = data.filter(d => d.STATUS.toUpperCase() === "CANCELLED").length;
+    const cancelled = filteredData.filter(d => d.STATUS.toUpperCase() === "CANCELLED").length;
   
     document.getElementById("totalNewPolicies").textContent = NewlyCapturedPolicies;
     document.getElementById("newCount").textContent = NewPolicies;
@@ -136,11 +158,9 @@ function updateDashboard(data, saveMain = true) {
     document.getElementById("conversionRate").textContent = conversionRate + "%";
     document.getElementById("cancelledCount").textContent = cancelled;
 
-// === Weekly Trend by ACTION ===
+    // === Weekly Trend ===
     const weekActionMap = {};
-
-    // Group data by week and action
-    data.forEach(d => {
+    filteredData.forEach(d => {
         const week = d.WEEK;
         const action = d.ACTION;
         if (!weekActionMap[action]) {
@@ -149,18 +169,14 @@ function updateDashboard(data, saveMain = true) {
         weekActionMap[action][week] = (weekActionMap[action][week] || 0) + 1;
     });
 
-    // Prepare traces for Plotly
-    const traces = Object.keys(weekActionMap).map(action => {
-        return {
-            x: Object.keys(weekActionMap[action]),
-            y: Object.values(weekActionMap[action]),
-            type: "scatter",
-            mode: "lines+markers",
-            name: action   // label line by ACTION value
-        };
-    });
+    const traces = Object.keys(weekActionMap).map(action => ({
+        x: Object.keys(weekActionMap[action]),
+        y: Object.values(weekActionMap[action]),
+        type: "scatter",
+        mode: "lines+markers",
+        name: action
+    }));
 
-    // Plot the chart
     Plotly.react("weeklyTrend", traces, {
         title: "Weekly Trend by ACTION",
         margin: { t: 30 },
@@ -168,16 +184,15 @@ function updateDashboard(data, saveMain = true) {
         yaxis: { title: "Count" }
     });
 
-    // Weekly interactivity
     document.getElementById("weeklyTrend").on('plotly_click', function(event){
-        const clickedWeek = event.points[0].x;
-        const filtered = mainData.filter(d => d.WEEK === parseInt(clickedWeek));
-        updateDashboard(filtered, false);
+        activeWeek = event.points[0].x;
+        filteredData = applyFilters();
+        updateDashboard(mainData, false);
     });
 
     // === Monthly Trend ===
     const monthMap = {};
-    data.forEach(d => monthMap[d.MONTH] = (monthMap[d.MONTH] || 0) + 1);
+    filteredData.forEach(d => monthMap[d.MONTH] = (monthMap[d.MONTH] || 0) + 1);
     Plotly.react("monthlyTrend", [{
         x: Object.keys(monthMap),
         y: Object.values(monthMap),
@@ -185,11 +200,12 @@ function updateDashboard(data, saveMain = true) {
         marker: { color: "#800000" }
     }], { title: "Monthly New Policies", margin: { t: 30 } });
 
-    document.getElementById("monthlyTrend")?.on('plotly_click', function(event){
-        const clickedMonth = event.points[0].x;
-        const filtered = mainData.filter(d => d.MONTH === parseInt(clickedMonth));
-        updateDashboard(filtered, false);
+    document.getElementById("monthlyTrend").on('plotly_click', function(event){
+        activeMonth = event.points[0].x;
+        filteredData = applyFilters();
+        updateDashboard(mainData, false);
     });
+  
 
     // === Plan Type Distribution ===
     const planMap = {};

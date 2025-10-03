@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Dispatch Dashboard</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <!-- Plotly -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <!-- XLSX for Excel fallback -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="sidebar">
+    <h2>Reports</h2>
+    <div class="nav-item"><a href="index.html">Claims</a></div>
+    <div class="nav-item"><a href="policy_onboarding.html">Policy Uptake</a></div>
+    <div class="nav-item"><a href="society_claims.html">Society Claims</a></div>
+    <div class="nav-item active" style="color:white;">Dispatch</div>
+    <div class="nav-item"><a href="settings.html">Settings</a></div>
+
+    <label class="file-label" for="fileInput">Upload Dispatch Excel (backup)</label>
+    <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" />
+
+    <label class="file-label">Date Out (Start)</label>
+    <input type="date" id="dateStart" />
+
+    <label class="file-label">Date Out (End)</label>
+    <input type="date" id="dateEnd" />
+
+    <label class="file-label">Branch</label>
+    <select id="branchFilter"><option value="All">All</option></select>
+
+    <label class="file-label">Payment Type</label>
+    <select id="paymentFilter"><option value="All">All</option></select>
+
+    <label class="file-label">Service Type</label>
+    <select id="serviceFilter"><option value="All">All</option></select>
+
+    <button id="resetFilter" style="margin-top:12px;">Reset Filters</button>
+
+    <div style="margin-top:14px;color:#800000;font-weight:700">Data source</div>
+    <small id="dataSource" style="color:#666">Google Sheets (auto) or local Excel</small>
+
+    <div id="errorMessage" style="color:#d00;margin-top:12px;display:none"></div>
+  </div>
+
+  <div class="main">
+    <div class="header">
+      <h1>Dispatch Dashboard</h1>
+      <p class="subtitle">Operational & Financial KPIs — Dispatches, Payments, Turnaround, Risk</p>
+    </div>
+
+    <!-- KPI cards -->
+    <div class="metrics" id="kpis">
+      <!-- filled by JS -->
+    </div>
+
+    <!-- charts -->
+    <div class="charts">
+      <div class="chart-box"><div id="dispatchTimeSeries"></div></div>
+      <div class="chart-box"><div id="avgStayByBranch"></div></div>
+      <div class="chart-box"><div id="serviceTypePie"></div></div>
+      <div class="chart-box"><div id="coffinTop"></div></div>
+      <div class="chart-box"><div id="paymentMix"></div></div>
+      <div class="chart-box"><div id="revenueTrend"></div></div>
+      <div class="chart-box full"><div id="hourlyHeat"></div></div>
+      <div class="chart-box full"><div id="dispatchTable"></div></div>
+    </div>
+  </div>
+
+  <script src="dispatch.js"></script>
+</body>
+</html>
